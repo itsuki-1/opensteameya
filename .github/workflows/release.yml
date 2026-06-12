@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release-win-x64:
+    name: Build and release Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore .\SteamEyaWinUI.sln
+
+      - name: Publish Windows x64
+        run: >
+          dotnet publish .\SteamEyaWinUI\SteamEyaWinUI.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output .\artifacts\publish\win-x64
+          -p:WindowsPackageType=None
+          -p:WindowsAppSDKSelfContained=true
+          -p:PublishSingleFile=false
+
+      - name: Package
+        id: package
+        shell: pwsh
+        run: |
+          $shortSha = "${{ github.sha }}".Substring(0, 7)
+          $artifactName = "SteamEYA-win-x64-$shortSha.zip"
+          $artifactPath = Join-Path $PWD "artifacts\$artifactName"
+
+          New-Item -ItemType Directory -Force -Path .\artifacts | Out-Null
+          Compress-Archive -Path .\artifacts\publish\win-x64\* -DestinationPath $artifactPath -Force
+
+          "short_sha=$shortSha" >> $env:GITHUB_OUTPUT
+          "artifact_name=$artifactName" >> $env:GITHUB_OUTPUT
+          "artifact_path=$artifactPath" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = "main-${{ github.run_id }}-${{ steps.package.outputs.short_sha }}"
+          gh release create $tag "${{ steps.package.outputs.artifact_path }}" `
+            --target "${{ github.sha }}" `
+            --title "SteamEYA ${{ steps.package.outputs.short_sha }}" `
+            --notes "自动发布 main 分支提交 ${{ github.sha }} 的 Windows x64 自包含版本。"

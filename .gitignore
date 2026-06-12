@@ -6,3 +6,4 @@ obj/
 *.user
 *.suo
 node_modules_temp/
+artifacts/
