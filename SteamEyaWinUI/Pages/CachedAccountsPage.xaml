@@ -62,23 +62,13 @@
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <Button
-                        x:Name="DeleteCachedButton"
-                        Click="DeleteCachedButton_Click">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE74D;" FontSize="16" />
-                            <TextBlock Text="删除" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button
                         x:Name="ClearCachedButton"
-                        Grid.Column="1"
-                        Click="ClearCachedButton_Click">
+                        Click="ClearCachedButton_Click"
+                        ToolTipService.ToolTip="清空全部缓存账号">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE75C;" FontSize="16" />
                             <TextBlock Text="清空" />
@@ -86,19 +76,19 @@
                     </Button>
 
                     <TextBlock
-                        x:Name="CachedSelectionHintText"
-                        Grid.Column="2"
+                        x:Name="CachedHintText"
+                        Grid.Column="1"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Right"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Ctrl/Shift 可多选" />
+                        Text="悬停卡片左上角可勾选，支持多选删除" />
                 </Grid>
 
                 <ListView
                     x:Name="CachedAccountList"
                     Grid.Row="1"
-                    SelectionMode="Extended"
+                    SelectionMode="Single"
                     SelectionChanged="CachedAccountList_SelectionChanged">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
@@ -111,63 +101,125 @@
 
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:CachedSteamLoginAccount">
-                            <Border
-                                Padding="14"
-                                CornerRadius="{ThemeResource OverlayCornerRadius}"
-                                BorderThickness="1"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
-                                <Grid MinHeight="64" ColumnSpacing="14">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+                            <Grid
+                                Background="Transparent"
+                                PointerEntered="CachedCard_PointerEntered"
+                                PointerExited="CachedCard_PointerExited">
+                                <Border
+                                    Padding="14"
+                                    CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                    BorderThickness="1"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                                    <Grid MinHeight="64" ColumnSpacing="14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
 
-                                    <PersonPicture
-                                        Width="52"
-                                        Height="52"
-                                        VerticalAlignment="Center"
-                                        DisplayName="{x:Bind AccountTitle}"
-                                        ProfilePicture="{x:Bind AvatarImage}" />
+                                        <PersonPicture
+                                            Width="52"
+                                            Height="52"
+                                            VerticalAlignment="Center"
+                                            DisplayName="{x:Bind AccountTitle}"
+                                            ProfilePicture="{x:Bind AvatarImage}" />
 
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Spacing="4"
-                                        VerticalAlignment="Center">
-                                        <TextBlock
-                                            Text="{x:Bind AccountTitle}"
-                                            FontSize="15"
-                                            FontWeight="SemiBold"
-                                            TextTrimming="CharacterEllipsis" />
-                                        <TextBlock
-                                            Text="{x:Bind PersonaDisplayName}"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            TextTrimming="CharacterEllipsis" />
-                                        <TextBlock
-                                            Text="{x:Bind SteamIdDisplay}"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Spacing="4"
+                                            VerticalAlignment="Center">
+                                            <TextBlock
+                                                Text="{x:Bind AccountTitle}"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock
+                                                Text="{x:Bind PersonaDisplayName}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock
+                                                Text="{x:Bind SteamIdDisplay}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
 
-                                    <StackPanel
-                                        Grid.Column="2"
-                                        MinWidth="96"
-                                        Spacing="4"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Right">
-                                        <TextBlock
-                                            Text="缓存时间"
-                                            HorizontalAlignment="Right"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock
-                                            Text="{x:Bind CachedAtShortText}"
-                                            HorizontalAlignment="Right" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                                        <StackPanel
+                                            Grid.Column="2"
+                                            MinWidth="96"
+                                            Spacing="4"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right">
+                                            <TextBlock
+                                                Text="缓存时间"
+                                                HorizontalAlignment="Right"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Text="{x:Bind CachedAtShortText}"
+                                                HorizontalAlignment="Right" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 选中：整卡黑框（高对比 ink 边框，与历史账号页一致） -->
+                                <Border
+                                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                    IsHitTestVisible="False"
+                                    Visibility="{x:Bind SelectionRingVisibility, Mode=OneWay}" />
+
+                                <!-- 左上角 45° 角标勾选指示器：悬停半透明角标作提示，选中实心 ink 三角 + 白色对勾。
+                                     用无 chrome 的 Button（而非 Tapped）以可靠阻止点勾选顺带选中整行（详情焦点）。 -->
+                                <Button
+                                    Width="30"
+                                    Height="30"
+                                    Margin="0"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Click="CachedCardCheck_Click"
+                                    ToolTipService.ToolTip="勾选以批量操作"
+                                    Visibility="{x:Bind CheckIndicatorVisibility, Mode=OneWay}">
+                                    <Button.Resources>
+                                        <SolidColorBrush x:Key="ButtonBackground" Color="Transparent" />
+                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
+                                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Transparent" />
+                                        <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+                                        <SolidColorBrush x:Key="ButtonBorderBrush" Color="Transparent" />
+                                        <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="Transparent" />
+                                        <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="Transparent" />
+                                    </Button.Resources>
+                                    <Grid>
+                                        <Path
+                                            Data="M 8,0 L 30,0 L 0,30 L 0,8 A 8,8 0 0 1 8,0 Z"
+                                            Stretch="None"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Fill="{ThemeResource TextFillColorPrimaryBrush}"
+                                            Opacity="0.35"
+                                            Visibility="{x:Bind EmptyCheckCircleVisibility, Mode=OneWay}" />
+                                        <Path
+                                            Data="M 8,0 L 30,0 L 0,30 L 0,8 A 8,8 0 0 1 8,0 Z"
+                                            Stretch="None"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Fill="{ThemeResource TextFillColorPrimaryBrush}"
+                                            Visibility="{x:Bind SelectionRingVisibility, Mode=OneWay}" />
+                                        <FontIcon
+                                            Glyph="&#xE73E;"
+                                            FontSize="11"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Margin="4,3,0,0"
+                                            Foreground="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                            Visibility="{x:Bind CheckIndicatorVisibility, Mode=OneWay}" />
+                                    </Grid>
+                                </Button>
+                            </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -197,6 +249,48 @@
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
+
+                <!-- 批量操作栏：勾选任意卡片后浮现在列表底部，操作针对全部已勾选账号 -->
+                <Border
+                    x:Name="BatchActionBar"
+                    Grid.Row="1"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,0,4"
+                    Padding="14,10"
+                    Visibility="Collapsed"
+                    CornerRadius="{ThemeResource OverlayCornerRadius}"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            x:Name="BatchSelectionText"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="已选 0 项" />
+                        <Button
+                            x:Name="BatchClearButton"
+                            Grid.Column="1"
+                            Click="BatchClearButton_Click"
+                            Content="取消选择" />
+                        <Button
+                            x:Name="BatchDeleteButton"
+                            Grid.Column="2"
+                            Click="BatchDeleteButton_Click"
+                            ToolTipService.ToolTip="删除所选缓存账号">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                                <TextBlock Text="批量删除" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
             </Grid>
 
             <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" VerticalAlignment="Top">

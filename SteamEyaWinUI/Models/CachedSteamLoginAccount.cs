@@ -1,11 +1,13 @@
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json.Serialization;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using SteamEyaWinUI.Services;
 
 namespace SteamEyaWinUI.Models;
 
-public sealed partial class CachedSteamLoginAccount
+public sealed partial class CachedSteamLoginAccount : INotifyPropertyChanged
 {
     public string AccountName { get; set; } = "";
 
@@ -98,5 +100,74 @@ public sealed partial class CachedSteamLoginAccount
         }
 
         return null;
+    }
+
+    // ---------- 列表多选 / 悬停的瞬时 UI 状态（不持久化，仅驱动卡片视觉，列表重建后由页面重新套用） ----------
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private bool _isSelected;
+
+    /// <summary>是否被勾选进批量选择集。</summary>
+    [JsonIgnore]
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected == value)
+            {
+                return;
+            }
+
+            _isSelected = value;
+            RaiseSelectionVisuals();
+        }
+    }
+
+    private bool _isPointerOver;
+
+    /// <summary>鼠标是否悬停在卡片上（用于悬停时才显示勾选框）。</summary>
+    [JsonIgnore]
+    public bool IsPointerOver
+    {
+        get => _isPointerOver;
+        set
+        {
+            if (_isPointerOver == value)
+            {
+                return;
+            }
+
+            _isPointerOver = value;
+            RaiseSelectionVisuals();
+        }
+    }
+
+    /// <summary>选中时显示：整卡黑框 + 左上角实心对勾。</summary>
+    [JsonIgnore]
+    public Visibility SelectionRingVisibility => _isSelected ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>左上角勾选指示器：悬停或已选时出现。</summary>
+    [JsonIgnore]
+    public Visibility CheckIndicatorVisibility =>
+        _isSelected || _isPointerOver ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>未选中时（指示器可见即仅悬停场景）显示空心圈。</summary>
+    [JsonIgnore]
+    public Visibility EmptyCheckCircleVisibility => _isSelected ? Visibility.Collapsed : Visibility.Visible;
+
+    private void RaiseSelectionVisuals()
+    {
+        var handler = PropertyChanged;
+        if (handler is null)
+        {
+            return;
+        }
+
+        handler(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        handler(this, new PropertyChangedEventArgs(nameof(SelectionRingVisibility)));
+        handler(this, new PropertyChangedEventArgs(nameof(CheckIndicatorVisibility)));
+        handler(this, new PropertyChangedEventArgs(nameof(EmptyCheckCircleVisibility)));
     }
 }
